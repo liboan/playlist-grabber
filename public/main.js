@@ -12,11 +12,79 @@ function initPage() { //bind jQuery event handler and do other stuff
 	$("#playlistTextBar").keydown(function (e) {
 		if (e.keyCode == 13) {
 			loadPlaylist($("#playlistTextBar").val());
+			clearTable();
 		}
 	});
+	$("#search").click(function () {
+		loadPlaylist($("#playlistTextBar").val());
+		clearTable();
+	});
+
 }
 
 ////////////////////////
+
+//////ANNOYING DISPLAY STUFF//////
+
+function createTable(songList) {
+	var table = document.createElement("table");
+	for (var i = 0; i < songList.length; i++) {
+		var tr = document.createElement("tr");
+		for (var columns = 0; columns < 4; columns++) {
+			var td = document.createElement("td");	
+			if (columns == 0) { //first column, SC stuff
+				time = timeString(secondsToTime(songList[i].sc.duration)); //b/c i'm dumb
+				td.innerHTML = "<a href ='" + songList[i].sc.link + "' " + " target = '_blank'>" + songList[i].sc.title + "</a><br>" + time;
+			}
+			if (columns == 1) {
+				td.innerHTML = "Loading..."
+			}
+			//$(td).text("asdf");
+			if (columns == 2) {
+				td.className += "left";
+			}
+			if (columns == 3) {
+				td.className += "right";
+			}
+			tr.appendChild(td);		
+		}
+		table.appendChild(tr);
+	}
+	document.getElementById("playlistTable").appendChild(table);
+
+	//event listeners for buttons, in order to traverse thru choices
+
+
+	$(".left").click(function () {
+		var index = $(this).parent().parent().children().index($(this).parent());
+		if (songList[index].dlIndex > 0) {
+			songList[index].dlIndex--; //increment youtube download variable
+		}
+		tableYT(songList,index,songList[index].dlIndex);
+
+	});
+	$(".right").click(function () {
+		var index = $(this).parent().parent().children().index($(this).parent());
+		if (songList[index].dlIndex < songList[index].yt.length - 1) { //make sure to give it space to add
+			songList[index].dlIndex++; //increment youtube download variable
+		}
+		tableYT(songList,index,songList[index].dlIndex);
+	});
+
+}
+
+function clearTable() {
+	document.getElementById("playlistTable").innerHTML = "";
+}
+
+function tableYT(songList, songIndex, candidate) { //index of song in songList, index of candidate
+	console.log(candidate);
+	var table = document.getElementById("playlistTable").getElementsByTagName("table")[0];
+	var time = timeString(secondsToTime(songList[songIndex].yt[candidate].duration));
+	var string = "<a href = 'https://www.youtube.com/watch?v=" + songList[songIndex].yt[candidate].id + "' target = '_blank'>" + 
+	songList[songIndex].yt[candidate].title + "</a><br>" + time;
+	table.rows[songIndex].cells[1].innerHTML = string;
+}
 
 //////YOUTUBE API STUFF//////
 function initYoutube() {
@@ -29,6 +97,7 @@ function initYoutube() {
 }
 
 function searchSong(query, index) { //index = index of songList on which searchSong is being called. 
+	console.log("SEARCHING");
 	var videoCount = 10; //number of videos requested
 
 	var request = gapi.client.youtube.search.list({
@@ -62,6 +131,7 @@ function searchSong(query, index) { //index = index of songList on which searchS
 				duration: hmsToSeconds(ISOtoTime(response.items[0].contentDetails.duration)),
 			});
 
+
 			if (candidates.length == videoCount) { //if complete
 				//console.log(candidates);
 				pushYTInfo(candidates, index);
@@ -74,11 +144,24 @@ function searchSong(query, index) { //index = index of songList on which searchS
 }
 
 function pushYTInfo(candidates, index) { //pushes to songList
+	console.log("COMPLETE" + candidates[0].title);
 	songList[index].yt = candidates;
 	completeSearches++;
-	if (completeSearches == songList.length) {
+	if (completeSearches == songList.length) { //if all searches have returned
 		showPlaylist(songList);
+		for (var i = 0; i < songList.length; i++) {
+			tableYT(songList,i,0); 
+		}
+		$("#dlButton").show();
 	}
+}
+
+function loadNextCandidate(index) {
+	if (songList[index].dlIndex <= 10) {
+		songList[index].dlIndex++; //increment youtube download variable
+	}
+
+
 }
 
 //////SOUNDCLOUD API STUFF//////
@@ -93,10 +176,11 @@ function initSoundcloud() {
 
 function loadPlaylist(url) {
 	songList = []; //clear previous search
+	completeSearches = 0;
+	$("#dlButton").hide();
 	SC.get("/resolve", { url: url }, function (data) {
 		console.log(data);
 		if (data.kind === "playlist") {
-			alert("playlist");
 
 			for (var i = 0; i < data.tracks.length; i++) {
 				songList.push({
@@ -111,8 +195,8 @@ function loadPlaylist(url) {
 			}
 
 
-
-			playlistSearch(songList);
+			createTable(songList);
+			playlistSearch(songList); //start youtube searches
 		}
 		else {
 			alert("Please enter a playlist");
@@ -145,13 +229,6 @@ function playlistSearch(list) { //takes songList
 
 //////ANNOYING TIME STUFF//////
 
-function msToTime(ms) {
-	var seconds = Math.floor(ms/1000);
-	var minutes = Math.floor(seconds/60);
-	seconds = seconds % 60;
-	return minutes + ":" + seconds;
-}
-
 function hmsToSeconds(timeArray) { //returns seconds when an array from ISOtoTime() is passed in
 	return 3600 * timeArray[0] + 60 * timeArray[1] + timeArray[2]; 
 }
@@ -177,6 +254,48 @@ function ISOtoTime(duration) { //YouTube API returns duration in ISO 8601 format
 			time.push(0);
 		}
 	}
-	return time;
+	return time; //return array, [h,m,s]
 
+}
+
+function secondsToTime(seconds) {
+	var time = [];
+	var hours = Math.floor(seconds/3600);
+	time.push(hours);
+	var remainder = 0;
+	if (hours > 0) {
+		remainder = seconds % 3600;
+	}
+	else {
+		remainder = seconds;
+	}
+	var minutes = Math.floor(remainder/60);
+	time.push(minutes);
+	if (minutes > 0) {
+		seconds = seconds % 60;
+	}
+	time.push(seconds);
+	return time;
+}
+
+function timeString(time) {
+	var string = "";
+	if (time[0] > 0) {
+		if (time[0] < 10) {
+			string += "0";
+		}
+		string += time[0] + ":";
+	}
+
+	if (time[1] < 10) {
+		string += "0";
+	}
+	string += time[1] + ":";
+
+	if (time[2] < 10) {
+		string += "0";
+	}
+	string += time[2] + "";
+
+	return string;
 }

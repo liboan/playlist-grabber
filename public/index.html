@@ -3,15 +3,42 @@
 		<script src = "https://code.jquery.com/jquery-2.1.3.js"></script>
 		<script src = "http://connect.soundcloud.com/sdk.js"></script>
 		<script type="text/javascript" src = "main.js"></script>
+		<style type="text/css">
+			td {
+				font: 12px Arial;
+				border: 2px solid black;
+				width: 200px;
+				height: 40px;
+			}
+			.left, .right {
+				width: 20px;
+				height: 30px;
+			}
+
+			#dlButton {
+				width: 100px;
+				height: 50px;
+				text-align: center;
+				border: 2px solid black;
+				font: 40px Arial;
+				background-color: lightgreen;
+				display: none;
+			}
+		</style>
 	</head>
 	<body>
 		<div id = "playlistInput">
 			Enter playlist url:
-			<input style = "width: 500px" type = "text" id = "playlistTextBar" value = "https://soundcloud.com/user531613781/sets/vicetone"/>
-			
+			<input style = "width: 400px" type = "text" id = "playlistTextBar" value = "https://soundcloud.com/user531613781/sets/vicetone"/>
+			<input type = "button" id = "search" value = "Search"/>
+		</div>	
+		<br><br>
+		<div id = "playlistTable"></div>
+		<div id = "dlButton">Download!</div>
+		
 
 
 
-			<script type = "text/javascript" src="https://apis.google.com/js/client.js?onload=initAPIs"></script>
+		<script type = "text/javascript" src="https://apis.google.com/js/client.js?onload=initAPIs"></script>
 	</body>
 </html>
