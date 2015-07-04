@@ -1,8 +1,9 @@
 #youtube-dl stuff
-
+from __future__ import unicode_literals
 import youtube_dl
 
-def download(idString): #accepts youtube video ID, downloads and converts the video
+
+def download(idString, directory): #accepts youtube video ID, downloads and converts the video
     class MyLogger(object):
         def debug(self, msg):
             #print(msg)
@@ -21,6 +22,7 @@ def download(idString): #accepts youtube video ID, downloads and converts the vi
 
     ydl_opts = {
         'format': 'bestaudio/best',
+        'outtmpl': directory + '/%(title)s.%(ext)s',
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
             'preferredcodec': 'mp3',

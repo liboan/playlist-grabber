@@ -1,6 +1,7 @@
 from soundcloud_api import SCPlaylistObject
 from youtube_api import YTSearchObject
 from youtube_dl_functions import download
+import os, sys
 
 
 def isInt(s): #boolean, checks if s can be cast to int
@@ -26,7 +27,7 @@ playlist_url = raw_input("Please enter URL of Soundcloud playlist: \n")
 print "Retrieving Soundcloud playlist"
 
 a = SCPlaylistObject(playlist_url)
-a.getPlaylist() #get SC playlsit
+a.getPlaylist() #get SC playlist
 
 print "Searching for candidates from Youtube\n"
 
@@ -46,10 +47,18 @@ while True:
 
 playlist = a.returnPlaylist()
 
+title = a.playlistTitle
+
+if not os.path.exists(title):
+	os.makedirs(title)
+else:
+	print "Directory " + title + " already exists."
+	sys.exit(0)
+
 print "Converting " + str(len(playlist)) + " videos."
 
 for x in range(0,len(playlist)):
 	track = playlist[x]
 	idString = track["candidates"][track["selected"]]["id"]
-	download(idString)
+	download(idString, title)
 	print "Complete, " + str(len(playlist)-1-x) + " remaining."

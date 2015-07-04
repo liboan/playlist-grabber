@@ -8,6 +8,7 @@ class SCPlaylistObject(object):
 	def __init__(self, url):
 		self.client = soundcloud.Client(client_id = "04bb44568d1cbab6d74d3bc86b2819c9")
 		self.url = url
+		self.playlistTitle = ""
 		self.results = []
 
 		self.ytSearcher = YTSearchObject()
@@ -17,12 +18,13 @@ class SCPlaylistObject(object):
 		data = self.client.get("/resolve", url = self.url)
 		if data.kind == "playlist":
 			self.results = data.tracks
+			self.playlistTitle = data.title.encode("utf-8")
 			for track in self.results: #trim down track objects to just duration, title, and urls
 				temp_title = track["title"]
 				temp_duration = track["duration"]/1000
 				temp_url = track["permalink_url"]
 				track.clear()
-				track["title"] = temp_title
+				track["title"] = temp_title.encode("utf-8")
 				track["duration"] = temp_duration
 				track["url"] = temp_url
 				track["candidates"] = [] #start with empty list of candidates and populate 
@@ -61,7 +63,7 @@ class SCPlaylistObject(object):
 				print "/"*15 + " Candidates for index " + str(index) + " " + "/"*15
 				for x in range(0,len(self.results[index]["candidates"])):
 					track = self.results[index]["candidates"][x]
-					string = str(x).ljust(2) + " " + str(track["duration"]).ljust(5) + " " + track["title"].ljust(40)[0:40]
+					string = str(x).ljust(2) + " " + str(track["duration"]).ljust(5) + " " + track["title"].ljust(80)[0:80]
 					print string
 				print "/"*54
 			else:
