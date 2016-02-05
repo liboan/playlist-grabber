@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 import youtube_dl
 
 
-def download(idString, directory): #accepts youtube video ID, downloads and converts the video
+def download(url, directory): #accepts youtube video URL, downloads and converts the video
     class MyLogger(object):
         def debug(self, msg):
             #print(msg)
@@ -32,11 +32,9 @@ def download(idString, directory): #accepts youtube video ID, downloads and conv
         'progress_hooks': [my_hook],
     }
 
-    url = 'https://www.youtube.com/watch?v=' + idString
-
     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
         ydl.download([url])
         # for track in playlist:
-        # 	idString = track["candidates"][track["selected"]]["id"]
-        # 	print 'https://www.youtube.com/watch?v=' + idString
-        # 	ydl.download(['https://www.youtube.com/watch?v=' + idString])
+        # 	url = track["candidates"][track["selected"]]["id"]
+        # 	print 'https://www.youtube.com/watch?v=' + url
+        # 	ydl.download(['https://www.youtube.com/watch?v=' + url])
